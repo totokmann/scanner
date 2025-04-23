@@ -2,6 +2,9 @@ from datetime import datetime, timedelta
 from jose import JWTError, jwt
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
+import os
+from dotenv import load_dotenv
+load_dotenv()
 
 # config
 SECRET_KEY = os.getenv("SECRET_KEY")
