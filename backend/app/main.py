@@ -10,7 +10,7 @@ app.include_router(auth.router)
 # habilita CORS para el frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # poné el dominio del frontend si lo conocés
+    allow_origins=["http://localhost:5173"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

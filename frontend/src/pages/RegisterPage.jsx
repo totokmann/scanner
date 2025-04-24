@@ -2,30 +2,30 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
-export default function LoginPage() {
+export default function RegisterPage() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
-  const handleSubmit = async (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post("http://localhost:8000/login", new URLSearchParams({
+      await axios.post("http://localhost:8000/register", {
         username,
         password,
-      }));
-      localStorage.setItem("access_token", res.data.access_token);
-      navigate("/dashboard");
+      });
+      alert("Registro exitoso. Iniciá sesión.");
+      navigate("/");
     } catch (err) {
       console.error(err);
-      alert("Credenciales incorrectas");
+      alert("Error al registrarse. Usuario ya existe o datos inválidos.");
     }
   };
 
   return (
     <div>
-      <h2>Iniciar sesión</h2>
-      <form onSubmit={handleSubmit}>
+      <h2>Registro</h2>
+      <form onSubmit={handleRegister}>
         <input
           type="text"
           placeholder="Usuario"
@@ -38,11 +38,8 @@ export default function LoginPage() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         /><br />
-        <button type="submit">Entrar</button>
+        <button type="submit">Registrarse</button>
       </form>
-      <p>
-        ¿No tenés cuenta? <a href="/register">Registrate acá</a>
-      </p>
     </div>
   );
 }
