@@ -1,8 +1,12 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 export default function Dashboard() {
   const navigate = useNavigate();
+  const [hosts, setHosts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
 
   const handleLogout = () => {
     localStorage.removeItem("access_token");
@@ -10,22 +14,52 @@ export default function Dashboard() {
   };
 
   useEffect(() => {
-    // Acá en el futuro podríamos cargar IPs activas desde el backend
+    const fetchHosts = async () => {
+      try {
+        const res = await axios.get("http://localhost:8000/discover");
+        setHosts(res.data);
+      } catch (err) {
+        console.error("Error al obtener hosts:", err);
+        alert("No se pudo escanear la red.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchHosts();
   }, []);
 
   return (
     <div>
       <h2>Dashboard</h2>
-      <p>Bienvenido al panel principal.</p>
       <button onClick={handleLogout}>Cerrar sesión</button>
-
       <hr />
 
       <h3>Dispositivos conectados:</h3>
-      <p>(Acá vamos a mostrar las IPs activas)</p>
-
-      <h3>Historial de escaneos:</h3>
-      <p>(Y acá los escaneos pasados)</p>
+      {loading ? (
+        <p>Escaneando red...</p>
+      ) : hosts.length === 0 ? (
+        <p>No se encontraron dispositivos.</p>
+      ) : (
+        <table>
+          <thead>
+            <tr>
+              <th>IP</th>
+              <th>Hostname</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            {hosts.map((host, index) => (
+              <tr key={index}>
+                <td>{host.ip}</td>
+                <td>{host.hostname || "-"}</td>
+                <td>{host.state}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
     </div>
   );
 }
