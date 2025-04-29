@@ -1,6 +1,10 @@
 from fastapi import APIRouter, HTTPException
 from app.services.nmap_service import discover_hosts
 import nmap
+from app.core.database import SessionLocal
+from app.models.scan import Scan
+from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi import Depends
 
 router = APIRouter()
 
@@ -10,7 +14,7 @@ def discover():
 
 
 @router.get("/scan/{ip}")
-def scan_ip(ip: str):
+async def scan_ip(ip: str, db: AsyncSession = Depends(SessionLocal)):
     scanner = nmap.PortScanner()
     try:
         scanner.scan(hosts=ip, arguments="-sV")
@@ -28,14 +32,27 @@ def scan_ip(ip: str):
             for proto in protocols:
                 lport = scanner[ip][proto].keys()
                 for port in lport:
-                    ports.append({
+                    port_info = {
                         "port": port,
                         "service": scanner[ip][proto][port]['name'],
                         "state": scanner[ip][proto][port]['state'],
                         "product": scanner[ip][proto][port].get('product', '')
-                    })
-    except Exception:
-        ports = []
+                    }
+                    ports.append(port_info)
+
+                    # Guardar en DB
+                    new_scan = Scan(
+                        ip=ip,
+                        port=port_info["port"],
+                        service=port_info["service"],
+                        state=port_info["state"],
+                        product=port_info["product"],
+                    )
+                    db.add(new_scan)
+        await db.commit()
+    except Exception as e:
+        await db.rollback()
+        raise HTTPException(status_code=500, detail=f"Error guardando escaneo: {str(e)}")
 
     return {
         "ports": ports

@@ -2,7 +2,9 @@
 
 import asyncio
 from app.core.database import Base, engine
-from app.models.user import User  # importá todos tus modelos acá
+from app.models.user import User 
+from app.models.scan import Scan  
+
 
 async def init_models():
     async with engine.begin() as conn:
