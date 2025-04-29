@@ -3,12 +3,15 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.api import auth
 from app.api import network
+from app.api import history
 
 app = FastAPI()
 
 app.include_router(network.router)
 
 app.include_router(auth.router)
+
+app.include_router(history.router)
 
 # habilita CORS para el frontend
 app.add_middleware(

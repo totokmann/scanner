@@ -10,18 +10,30 @@ export default function ScanPage() {
   
 
   const handleScan = async (ip) => {
+    if (!ip) {
+      alert("IP inválida.");
+      return;
+    }
+  
     setScanningIp(ip);
     try {
-        const res = await axios.get(`http://localhost:8000/scan/${ip}`);
-        setSelectedIp(ip);
-        setScanResults(res.data.ports || []);        
+      const res = await axios.get(`http://localhost:8000/scan/${ip}`);
+      setSelectedIp(ip);
+      setScanResults(res.data.ports || []);
     } catch (err) {
+      if (err.response?.status === 404) {
+        alert("No se pudo escanear esta IP. El dispositivo no respondió.");
+      } else if (err.response?.status === 422) {
+        alert("IP inválida. No se pudo procesar.");
+      } else {
+        alert("Error al escanear el dispositivo.");
+      }
       console.error("Error al escanear IP:", err);
-      alert("No se pudo escanear el dispositivo.");
     } finally {
       setScanningIp(null);
     }
   };
+  
 
   useEffect(() => {
     const fetchHosts = async () => {
