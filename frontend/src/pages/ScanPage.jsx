@@ -4,6 +4,24 @@ import axios from "axios";
 export default function ScanPage() {
   const [hosts, setHosts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [scanningIp, setScanningIp] = useState(null);
+  const [scanResults, setScanResults] = useState([]);
+  const [selectedIp, setSelectedIp] = useState("");
+  
+
+  const handleScan = async (ip) => {
+    setScanningIp(ip);
+    try {
+        const res = await axios.get(`http://localhost:8000/scan/${ip}`);
+        setSelectedIp(ip);
+        setScanResults(res.data.ports || []);        
+    } catch (err) {
+      console.error("Error al escanear IP:", err);
+      alert("No se pudo escanear el dispositivo.");
+    } finally {
+      setScanningIp(null);
+    }
+  };
 
   useEffect(() => {
     const fetchHosts = async () => {
@@ -29,24 +47,61 @@ export default function ScanPage() {
       ) : hosts.length === 0 ? (
         <p>No se encontraron dispositivos activos.</p>
       ) : (
-        <table>
-          <thead>
-            <tr>
-              <th>IP</th>
-              <th>Hostname</th>
-              <th>Estado</th>
-            </tr>
-          </thead>
-          <tbody>
-            {hosts.map((host, index) => (
-              <tr key={index}>
-                <td>{host.ip}</td>
-                <td>{host.hostname || "-"}</td>
-                <td>{host.state}</td>
+        <>
+          <table>
+            <thead>
+              <tr>
+                <th>IP</th>
+                <th>Hostname</th>
+                <th>Estado</th>
+                <th>Acciones</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {hosts
+                .filter((host) => !host.ip.startsWith("127."))
+                .map((host, index) => (
+                  <tr key={index}>
+                    <td>{host.ip}</td>
+                    <td>{host.hostname || "-"}</td>
+                    <td>{host.state}</td>
+                    <td>
+                      <button onClick={() => handleScan(host.ip)} disabled={scanningIp === host.ip}>
+                        {scanningIp === host.ip ? "Escaneando..." : "Escanear"}
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+            </tbody>
+          </table>
+          {scanResults.length > 0 ? (
+            <div>
+                <h3>Resultados de escaneo para {selectedIp}</h3>
+                <table>
+                <thead>
+                    <tr>
+                    <th>Puerto</th>
+                    <th>Servicio</th>
+                    <th>Estado</th>
+                    <th>Producto</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {scanResults.map((result, index) => (
+                    <tr key={index}>
+                        <td>{result.port}</td>
+                        <td>{result.service}</td>
+                        <td>{result.state}</td>
+                        <td>{result.product || "-"}</td>
+                    </tr>
+                    ))}
+                </tbody>
+                </table>
+            </div>
+           ) : (
+            selectedIp && <p>No se detectaron puertos abiertos en {selectedIp}.</p>
+            )}
+        </>
       )}
     </div>
   );
