@@ -1,16 +1,15 @@
 from fastapi import APIRouter, HTTPException, Depends, Path
-from app.services.nmap_service import discover_hosts
-import nmap
-from app.core.database import SessionLocal
-from app.models.scan import Scan
 from sqlalchemy.ext.asyncio import AsyncSession
+from app.core.database import get_async_session 
+from app.services.nmap_service import discover_hosts
+from app.models.scan import Scan
+import nmap
 
 router = APIRouter()
 
 @router.get("/discover")
 def discover():
     return discover_hosts()
-
 
 @router.get("/scan/{ip:path}")
 async def scan_ip(ip: str, db: AsyncSession = Depends(get_async_session)):
