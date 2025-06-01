@@ -5,12 +5,14 @@ import PrivateRoute from "./components/PrivateRoute";
 import RegisterPage from "./pages/RegisterPage";
 import ScanPage from "./pages/ScanPage";
 import HistoryPage from "./pages/HistoryPage";
-
+import LandingPage from "./pages/LandingPage";
 
 function App() {
   return (
     <Routes>
-      <Route path="/" element={<LoginPage />} />
+      <Route path="/" element={<LandingPage />} />
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/register" element={<RegisterPage />} />
       <Route
         path="/dashboard"
         element={
@@ -19,7 +21,6 @@ function App() {
           </PrivateRoute>
         }
       />
-      <Route path="/register" element={<RegisterPage />} />
       <Route
         path="/scan"
         element={
@@ -41,4 +42,3 @@ function App() {
 }
 
 export default App;
-
